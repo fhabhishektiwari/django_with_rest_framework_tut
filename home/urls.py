@@ -1,8 +1,12 @@
-from django.contrib import admin
-from django.urls import path,include
+from django.urls import path
 from .views import *
 
 urlpatterns = [
-    path('',home),
-    path('student',post_student)
+    path('student/',StudentAPI.as_view()),
+    # path('get-student/', get_student, name='get_student'),
+    # path('student/', post_student, name="post_student"),
+    # path('update-student/<id>/', update_student, name="update_student"),
+    # # path('delete_student/<id>/', delete_student,name="delete_student"),
+    # path('delete_student/', delete_student, name="delete_student"),  # this is for query delete
+    path('get-book/', get_book)
 ]
