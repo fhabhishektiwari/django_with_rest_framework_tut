@@ -6,8 +6,11 @@ from .models import *
 from .serializers import *
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework.authentication import TokenAuthentication
+# from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 # Create your views here.
@@ -17,23 +20,34 @@ def get_book(request):
     serializer = BookSerializer(book_obj, many=True)
     return Response({'status': 200, 'payload': serializer.data})
 
+
 # registration
 class RegisterUser(APIView):
-    def post(self,request):
-        serializer=UserSerializer(data=request.data)
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
         if not serializer.is_valid():
             print(serializer.errors)
             return Response({'status': 403, 'errors': serializer.errors, 'message': 'something went wrong...'})
         serializer.save()
-        user=User.objects.get(username=serializer.data['username'])
-        token_obj, _ =Token.objects.get_or_create(user=user)
-        return Response({'status': 200, 'payload': serializer.data,'token':str(token_obj),'message': 'New user record '
-                                                                                                     'has been '
-                                                                                                     'created...'})
+        user = User.objects.get(username=serializer.data['username'])
+        # token_obj, _ = Token.objects.get_or_create(user=user)
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {'status': 200, 'payload': serializer.data, 'refresh': str(refresh),'access': str(refresh.access_token),
+             'message': 'New user record has been created...'})
+
+        """
+        return Response(
+            {'status': 200, 'payload': serializer.data, 'token': str(token_obj), 'message': 'New user record '
+                                                                                            'has been '
+                                                                                            'created...'})
+        """
 
 class StudentAPI(APIView):
-    authentication_classes = [TokenAuthentication]
+    # authentication_classes = [TokenAuthentication]
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         student_obj = Student.objects.all()
         serializer = StudentSerializer(student_obj, many=True)
@@ -83,8 +97,6 @@ class StudentAPI(APIView):
         except Exception as e:
             print(e)
             return Response({'status': 403, 'message': 'invalid id'})
-
-
 
     def delete(self, request):
         try:
