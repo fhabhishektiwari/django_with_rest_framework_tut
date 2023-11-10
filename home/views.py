@@ -110,6 +110,20 @@ class StudentAPI(APIView):
             return Response({'status': 500, 'message': f'An error occurred: {str(e)}'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+# Generic view in drf
+from rest_framework import generics
+
+class StudentGeneric(generics.ListAPIView,generics.CreateAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+
+class StudentGenericUpdateAndDelete(generics.UpdateAPIView,generics.DestroyAPIView):
+    queryset = Student.objects.all()
+    serializer_class = StudentSerializer
+    lookup_field = 'id'
+
+
+
 # @api_view(['GET'])
 # def get_student(request):
 #     student_obj = Student.objects.all()
